@@ -56,6 +56,12 @@ module.exports = {
             let sortOrder = process.env.SORT_ORDER;
             let limit = Number(process.env.LIMIT);
             let skip = Number(process.env.SKIP);
+
+            if (req.body.quantity) {
+                console.log(req.body.quantity)
+                match.quantity = Number(req.body.quantity)
+            }
+
             if (req.body.sort === 'desc') {
                 sortOrder = -1;
             }
@@ -66,32 +72,69 @@ module.exports = {
                 skip = req.body.paginationRequest.skip;
             }
 
-            let query = {};
 
-            await Clipping.find({}, 'id quantity').
-                skip(skip).limit(limit).sort({
-                    quantity: sortOrder
-                }).exec((err, doc) => {
-                    if (err) {
-                        res.json(err + "error")
-                    } else {
+            const clippings = await Clipping.aggregate([
+                { $match: match },
+                {
+                    $sort: { 'quantity': sortOrder }
+                },
+                {
+                    $facet: {
+                        totalData: [
+                            { $skip: skip },
+                            { $limit: limit },
+                            { $project: { "createdAt": 0, "updatedAt": 0, "__v": 0 } }
+                        ],
+                        totalCount: [
+                            { $count: "count" }
+                        ],
 
-                        Clipping.countDocuments(query).exec((count_error, count) => {
-                            if (err) {
-                                return res.json(count_error);
-                            }
-
-                            return res.send({
-                                clippings: doc,
-                                paginationResponse: {
-                                    count: count,
-                                    skip: skip,
-                                    limit: limit
-                                }
-                            });
-                        });
                     }
-                })
+                }
+            ])
+            const paginationResponse = {
+                count: clippings[0].totalCount[0] ? clippings[0].totalCount[0].count : 0,
+                skip: skip,
+                limit: limit
+            }
+
+
+            res.send({
+                clippings: clippings[0].totalData,
+                paginationResponse: paginationResponse
+            });
+
+
+            /* 
+            
+            let query = {};
+ 
+            await Clipping.aggregate([
+                 { $match: match }
+             ])
+                 skip(skip).limit(limit).sort({
+                     quantity: sortOrder
+                 }).exec((err, doc) => {
+                     if (err) {
+                         res.json(err + "error")
+                     } else {
+ 
+                         Clipping.countDocuments(query).exec((count_error, count) => {
+                             if (err) {
+                                 return res.json(count_error);
+                             }
+ 
+                             return res.send({
+                                 clippings: doc,
+                                 paginationResponse: {
+                                     count: count,
+                                     skip: skip,
+                                     limit: limit
+                                 }
+                             });
+                         });
+                     }
+                 })*/
 
 
         } catch (error) {

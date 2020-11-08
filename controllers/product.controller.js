@@ -171,8 +171,10 @@ module.exports = {
                             $lte: req.body.maxPrice
                         }
                     }
-                    if (req.body.clipping) {
-                        match.clipping = mongoose.Types.ObjectId(req.body.clipping)
+                    if (req.body.clippings && req.body.clippings.length > 0) {
+                        match.clipping = {
+                            $in: req.body.clippings.map(function (id) { return new mongoose.Types.ObjectId(id); })
+                        }
                     }
                     if (req.body.emission) {
                         match.emission = mongoose.Types.ObjectId(req.body.emission)
@@ -186,6 +188,7 @@ module.exports = {
                     if (req.body.paginationRequest.skip) {
                         skip = req.body.paginationRequest.skip;
                     }
+
                     const moneys = await Product.aggregate([
                         { $match: match },
                         {
@@ -225,8 +228,9 @@ module.exports = {
                     }
 
                     const matchClipping = {}
-                    if (req.body.clipping) {
-                        matchClipping._id = req.body.clipping;
+                    if (req.body.clippings && req.body.clippings.length > 0) {
+                        // { "$match" : { "author": { "$in": userIds } } },
+                        matchClipping._id = req.body.clippings;
                     }
 
                     paginationResponse.count = moneys[0].totalCount[0].count;

@@ -63,9 +63,16 @@ module.exports = {
     },
     getEmissions: async (req, res, next) => {
         try {
+            const match = {}
             let sortOrder = process.env.SORT_ORDER;
             let limit = Number(process.env.LIMIT);
             let skip = Number(process.env.SKIP);
+
+            if (req.body.name) {
+                console.log(req.body.name)
+                match.name = Number(req.body.name)
+            }
+
             if (req.body.sort === 'desc') {
                 sortOrder = -1;
             }
@@ -78,41 +85,55 @@ module.exports = {
 
             // const emissions = await Emission.find({}).populate('clippings').exec();
 
-            Emission.find({}, 'id name clippings').skip(skip).limit(limit).sort({
-                name: sortOrder
-            })
-                .populate(
-                    // here array is for our memory. 
-                    // because may need to populate multiple things
-                    {
-                        path: 'clippings',
-                        select: '_id quantity',
-                        model: 'Clipping',
-                        match: {
-                            // filter result in case of multiple result in populate
-                            // may not useful in this case
-                        }
+            const emissions = await Emission.aggregate([
+                { $match: match },
+                {
+                    $sort: { 'name': sortOrder }
+                },
+                {
+                    $facet: {
+                        totalData: [
+                            { $skip: skip },
+                            { $limit: limit },
+                            { $project: { "createdAt": 0, "updatedAt": 0, "__v": 0 } }
+                        ],
+                        totalCount: [
+                            { $count: "count" }
+                        ],
+
                     }
-                )
-                .exec((err, doc) => {
-                    console.log(err, doc)
-                    Emission.countDocuments({}).exec((count_error, count) => {
-                        if (err) {
-                            return res.json(count_error);
-                        }
+                }
+            ])
 
-                        return res.send({
-                            emissions: doc,
-                            paginationResponse: {
-                                count: count,
-                                skip: skip,
-                                limit: limit
-                            }
-                        });
-                    })
-                })
+            const paginationResponse = {
+                count: 0,
+                skip: skip,
+                limit: limit
+            }
 
+            if (emissions[0].totalData.length === 0) {
+                console.log("no emissions found")
+                return res.send({
+                    emissions: [],
+                    paginationResponse: paginationResponse
+                });
+            }
 
+            paginationResponse.count = emissions[0].totalCount[0].count;
+
+            try {
+                await Clipping.populate(emissions[0].totalData, { path: 'clippings', select: ['_id', 'quantity'] })
+                const result = {
+                    emissions: emissions[0].totalData,
+                    paginationResponse: paginationResponse
+                }
+                res.send(result);
+            } catch (error) {
+                res.send({
+                    emissions: [],
+                    paginationResponse: paginationResponse
+                });
+            }
         } catch (error) {
             next(error)
         }

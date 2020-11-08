@@ -1,7 +1,6 @@
 const JWT = require('jsonwebtoken')
 const createError = require('http-errors')
 const client = require('./init_redis')
-const uuid = require('./uuid')
 
 // TODO change somewebsite
 

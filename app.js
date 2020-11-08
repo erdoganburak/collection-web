@@ -11,6 +11,7 @@ const moneyRoute = require('./routes/money.route')
 const clippingRoute = require('./routes/clipping.route')
 const productRoute = require('./routes/product.route')
 const imageRoute = require('./routes/image.route')
+const cartRoute = require('./routes/cart.route')
 
 require('./helpers/init_redis')
 
@@ -40,6 +41,7 @@ app.use('/emission', emissionRoute)
 app.use('/money', moneyRoute)
 app.use('/product', productRoute)
 app.use('/image', imageRoute)
+app.use('/cart', cartRoute)
 
 app.use(async (req, res, next) => {
     next(createError.NotFound())

@@ -50,12 +50,19 @@ const moneyFilterSchema = Joi.object(
         minPrice: Joi.number().allow(null).min(0).optional(),
         maxPrice: Joi.number().allow(null).min(0).optional(),
         emission: Joi.string().allow('').optional(),
-        clipping: Joi.string().allow('').optional(),
+        clippings: Joi.array().items(Joi.string()),
         sort: Joi.string().allow('').optional(),
         paginationRequest: Joi.object().keys({
             limit: Joi.number().min(0),
             skip: Joi.number().min(0),
         }).required()
+    }
+)
+
+const cartSchema = Joi.object(
+    {
+        id: Joi.objectId().required(),
+        productId: Joi.objectId().required(),
     }
 )
 
