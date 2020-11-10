@@ -70,7 +70,7 @@ module.exports = {
 
             if (req.body.name) {
                 console.log(req.body.name)
-                match.name = Number(req.body.name)
+                match.name = { $regex: req.body.name, $options: "i" }
             }
 
             if (req.body.sort === 'desc') {
@@ -88,7 +88,7 @@ module.exports = {
             const emissions = await Emission.aggregate([
                 { $match: match },
                 {
-                    $sort: { 'name': sortOrder }
+                    $sort: { 'createdAt': sortOrder }
                 },
                 {
                     $facet: {

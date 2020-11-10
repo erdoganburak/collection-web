@@ -34,14 +34,34 @@ const movieSchema = new Schema({
         trim: true,
         required: true
     },
-    /* mainImage: {
-         type: Buffer
-     },
-     images: [
-         {
-             type: Buffer
-         }
-     ]*/
+    images: [
+        {
+            type: Buffer
+        }
+    ],
+    duration: {
+        type: Number,
+        required: true,
+        validate(value) {
+            if (value < 0) {
+                throw new Error('Duration must be a positive number')
+            }
+        }
+    },
+    summary: {
+        type: String,
+        trim: true,
+    },
+    actors: {
+        type: [
+            {
+                type: Schema.Types.ObjectId,
+                ref: 'Actor',
+                required: true
+            }
+        ],
+        required: true,
+    }
 })
 
 const moneySchema = new Schema({

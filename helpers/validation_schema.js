@@ -22,6 +22,28 @@ const emissionSchema = Joi.object(
     }
 )
 
+const actorSchema = Joi.object(
+    {
+        name: Joi.string().required(),
+        biography: Joi.string().optional(),
+        image: Joi.objectId().optional(),
+    }
+)
+
+const directorSchema = Joi.object(
+    {
+        name: Joi.string().required(),
+        biography: Joi.string().optional(),
+        image: Joi.objectId().optional(),
+    }
+)
+
+const categorySchema = Joi.object(
+    {
+        name: Joi.string().required()
+    }
+)
+
 
 // product: Joi.objectId().required()
 
@@ -71,5 +93,8 @@ module.exports = {
     clippingSchema,
     emissionSchema,
     moneySchema,
-    moneyFilterSchema
+    moneyFilterSchema,
+    actorSchema,
+    directorSchema,
+    categorySchema
 }
