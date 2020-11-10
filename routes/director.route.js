@@ -30,4 +30,7 @@ router.patch('/update-director/:id', verifyAccessToken, upload.fields([{
     name: 'image', maxCount: 1
 }]), DirectorController.updateDirector)
 
+
+
+
 module.exports = router

@@ -1,6 +1,7 @@
 
 const { directorSchema } = require('../helpers/validation_schema')
 const Director = require('../models/director.model')
+const { Movie } = require('../models/product.model')
 const Image = require('../models/image.model')
 const createError = require('http-errors')
 
@@ -43,7 +44,6 @@ module.exports = {
             next(error)
         }
     },
-
     getDirectorById: async (req, res, next) => {
         const _id = req.params.id
         try {

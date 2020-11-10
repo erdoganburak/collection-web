@@ -81,6 +81,38 @@ const moneyFilterSchema = Joi.object(
     }
 )
 
+const movieSchema = Joi.object(
+    {
+        name: Joi.string().required(),
+        duration: Joi.number().integer().min(0).required(),
+        summary: Joi.string().required(),
+        condition: Joi.number().integer().min(0).max(10).required(),
+        actors: Joi.array().items(Joi.string()).required(),
+        directors: Joi.array().items(Joi.string()).required(),
+        categories: Joi.array().items(Joi.string()).required(),
+        price: Joi.number().min(0).required(),
+        productType: Joi.string().required(),
+    }
+)
+
+const movieFilterSchema = Joi.object(
+    {
+        productType: Joi.string().required(),
+        name: Joi.string().allow('').optional(),
+        condition: Joi.number().integer().allow(null).min(1).max(10).optional(),
+        minPrice: Joi.number().allow(null).min(0).optional(),
+        maxPrice: Joi.number().allow(null).min(0).optional(),
+        actors: Joi.array().items(Joi.string()),
+        directors: Joi.array().items(Joi.string()),
+        categories: Joi.array().items(Joi.string()),
+        sort: Joi.string().allow('').optional(),
+        paginationRequest: Joi.object().keys({
+            limit: Joi.number().min(0),
+            skip: Joi.number().min(0),
+        }).required()
+    }
+)
+
 const cartSchema = Joi.object(
     {
         id: Joi.objectId().required(),
@@ -96,5 +128,7 @@ module.exports = {
     moneyFilterSchema,
     actorSchema,
     directorSchema,
-    categorySchema
+    categorySchema,
+    movieSchema,
+    movieFilterSchema
 }

@@ -34,11 +34,11 @@ const movieSchema = new Schema({
         trim: true,
         required: true
     },
-    images: [
-        {
-            type: Buffer
-        }
-    ],
+    /*  images: [
+          {
+              type: Buffer
+          }
+      ],*/
     duration: {
         type: Number,
         required: true,
@@ -52,11 +52,40 @@ const movieSchema = new Schema({
         type: String,
         trim: true,
     },
+    condition: {
+        type: Number,
+        required: true,
+        validate(value) {
+            if (value < 0 || value > 10) {
+                throw new Error('Condition must be between 1 to 10.')
+            }
+        }
+    },
     actors: {
         type: [
             {
                 type: Schema.Types.ObjectId,
                 ref: 'Actor',
+                required: true
+            }
+        ],
+        required: true,
+    },
+    directors: {
+        type: [
+            {
+                type: Schema.Types.ObjectId,
+                ref: 'Director',
+                required: true
+            }
+        ],
+        required: true,
+    },
+    categories: {
+        type: [
+            {
+                type: Schema.Types.ObjectId,
+                ref: 'Category',
                 required: true
             }
         ],

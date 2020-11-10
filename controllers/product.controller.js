@@ -2,9 +2,12 @@
 const createError = require('http-errors')
 const Emission = require('../models/emission.model')
 const Clipping = require('../models/clipping.model')
+const Director = require('../models/director.model')
+const Actor = require('../models/actor.model')
+const Category = require('../models/category.model')
 const Image = require('../models/image.model')
 const { Money, Movie, Product } = require('../models/product.model')
-const { moneySchema, moneyFilterSchema } = require('../helpers/validation_schema')
+const { moneySchema, moneyFilterSchema, movieSchema, movieFilterSchema } = require('../helpers/validation_schema')
 const mongoose = require('mongoose')
 
 module.exports = {
@@ -35,6 +38,45 @@ module.exports = {
                }
                next(error)
            }*/
+
+        try {
+            req.body.productType = "Movie"
+            await movieSchema.validateAsync(req.body)
+
+            req.body.frontImage = undefined;
+
+            if (req.files) {
+                if (req.files.frontImage) {
+                    const fi = new Image({ image: req.files.frontImage[0].buffer })
+                    const resultFrontImage = await fi.save();
+                    req.body.frontImage = resultFrontImage._id;
+                }
+            }
+
+            const directors = await Director.find({ _id: { $in: req.body.directors } });
+            if (directors.length !== req.body.directors.length) {
+                throw createError.BadRequest('One of the directors ids is not valid')
+            }
+
+            const actors = await Actor.find({ _id: { $in: req.body.actors } });
+            if (actors.length !== req.body.actors.length) {
+                throw createError.BadRequest('One of the actors ids is not valid')
+            }
+
+            const categories = await Category.find({ _id: { $in: req.body.categories } });
+            if (categories.length !== req.body.actors.length) {
+                throw createError.BadRequest('One of the categories ids is not valid')
+            }
+
+            const movie = new Movie(req.body)
+            const savedMovie = await movie.save()
+            res.send(savedMovie);
+        } catch (error) {
+            if (error.isJoi === true) {
+                return next(createError.BadRequest())
+            }
+            next(error)
+        }
     },
 
     saveMoney: async (req, res, next) => {
@@ -118,35 +160,139 @@ module.exports = {
             if (!money) {
                 throw createError.NotFound();
             }
-
-            /*   const result = {
-                   name: money.name,
-                   price: money.price,
-                   productNo: money.productNo,
-                   serialNo: money.serialNo,
-                   condition: money.condition,
-                   clipping: money.clipping,
-                   emission: money.emission
-               }*/
-
             res.send(money);
         } catch (error) {
             next(error)
         }
     },
-
     getProducts: async (req, res, next) => {
-        // TODO divide into functions
         try {
+            let sortOrder = process.env.SORT_ORDER;
+            let limit = Number(process.env.LIMIT);
+            let skip = Number(process.env.SKIP);
+            let paginationResponse = {
+                count: 0,
+                skip: skip,
+                limit: limit
+            }
+            const match = {}
             switch (req.body.productType) {
+                case "Movie":
+                    await movieFilterSchema.validateAsync(req.body)
+                    match.productType = req.body.productType;
+                    if (req.body.name) {
+                        match.name = { $regex: req.body.name, $options: "i" }
+                    }
+                    if (req.body.condition) {
+                        match.condition = req.body.condition;
+                    }
+                    if (req.body.minPrice) {
+                        match.price = {
+                            $gt: req.body.minPrice
+                        }
+                    }
+                    if (req.body.maxPrice) {
+                        match.price = {
+                            $lte: req.body.maxPrice
+                        }
+                    }
+                    if (req.body.directors && req.body.directors.length > 0) {
+                        match.directors = {
+                            $in: req.body.directors.map(function (id) { return new mongoose.Types.ObjectId(id); })
+                        }
+                    }
+
+                    if (req.body.actors && req.body.actors.length > 0) {
+                        match.actors = {
+                            $in: req.body.actors.map(function (id) { return new mongoose.Types.ObjectId(id); })
+                        }
+                    }
+
+                    if (req.body.categories && req.body.categories.length > 0) {
+                        match.categories = {
+                            $in: req.body.categories.map(function (id) { return new mongoose.Types.ObjectId(id); })
+                        }
+                    }
+
+                    if (req.body.sort === 'desc') {
+                        sortOrder = -1;
+                    }
+                    if (req.body.paginationRequest.limit) {
+                        limit = req.body.paginationRequest.limit;
+                    }
+                    if (req.body.paginationRequest.skip) {
+                        skip = req.body.paginationRequest.skip;
+                    }
+
+                    const movies = await Product.aggregate([
+                        { $match: match },
+                        {
+                            $sort: { 'createdAt': sortOrder }
+                        },
+                        {
+                            $facet: {
+                                totalData: [
+                                    { $skip: skip },
+                                    { $limit: limit },
+                                    { $project: { "createdAt": 0, "updatedAt": 0, "__v": 0 } }
+                                ],
+                                totalCount: [
+                                    { $count: "count" }
+                                ]
+                            }
+                        }
+                    ])
+
+                    paginationResponse = {
+                        count: 0,
+                        skip: skip,
+                        limit: limit
+                    }
+
+                    if (movies[0].totalData.length === 0) {
+                        console.log("no movies found")
+                        return res.send({
+                            movies: [],
+                            paginationResponse: paginationResponse
+                        });
+                    }
+
+                    const matchDirectors = {}
+                    if (req.body.directors && req.body.directors.length > 0) {
+                        matchDirectors._id = req.body.directors;
+                    }
+
+                    const matchActors = {}
+                    if (req.body.actors && req.body.actors.length > 0) {
+                        matchActors._id = req.body.actors;
+                    }
+
+                    const matchCategories = {}
+                    if (req.body.categories && req.body.categories.length > 0) {
+                        matchCategories._id = req.body.categories;
+                    }
+
+                    paginationResponse.count = movies[0].totalCount[0].count;
+
+                    try {
+                        await Director.populate(movies[0].totalData, { path: 'directors', select: 'name', match: matchDirectors })
+                        await Actor.populate(movies[0].totalData, { path: 'actors', select: 'name', match: matchActors })
+                        await Category.populate(movies[0].totalData, { path: 'categories', select: 'name', match: matchCategories })
+
+                        const result = {
+                            movies: movies[0].totalData,
+                            paginationResponse: paginationResponse
+                        }
+                        res.send(result);
+                    } catch (error) {
+                        res.send({
+                            movies: [],
+                            paginationResponse: paginationResponse
+                        });
+                    }
+                    break;
                 case "Money":
                     await moneyFilterSchema.validateAsync(req.body)
-
-                    const match = {}
-                    let sortOrder = process.env.SORT_ORDER;
-                    let limit = Number(process.env.LIMIT);
-                    let skip = Number(process.env.SKIP);
-
                     match.productType = req.body.productType;
 
                     if (req.body.productNo) {
@@ -208,7 +354,8 @@ module.exports = {
                             }
                         }
                     ])
-                    const paginationResponse = {
+
+                    paginationResponse = {
                         count: 0,
                         skip: skip,
                         limit: limit
@@ -229,7 +376,6 @@ module.exports = {
 
                     const matchClipping = {}
                     if (req.body.clippings && req.body.clippings.length > 0) {
-                        // { "$match" : { "author": { "$in": userIds } } },
                         matchClipping._id = req.body.clippings;
                     }
 
@@ -249,7 +395,6 @@ module.exports = {
                             moneys: [],
                             paginationResponse: paginationResponse
                         });
-                        // throw createError.InternalServerError('Cannot populate emission')
                     }
                     break;
                 default:
@@ -308,6 +453,25 @@ module.exports = {
             if (error.isJoi === true) {
                 return next(createError.BadRequest())
             }
+            next(error)
+        }
+    },
+    getMoviesByDirectorId: async (req, res, next) => {
+        const _id = req.params.id
+        try {
+            const director = await Director.findById(_id).exec();
+            if (!director) {
+                throw createError.NotFound()
+            }
+
+            const movies = await Movie.find({ directors: { $in: _id } });
+
+            const result = {
+                director: director,
+                movies: movies
+            }
+            res.send(result);
+        } catch (error) {
             next(error)
         }
     },

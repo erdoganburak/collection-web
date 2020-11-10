@@ -19,9 +19,7 @@ const upload = multer({
 //router.post('/save', verifyAccessToken, upload.array('image', 2), ProductController.saveProduct)
 
 router.post('/save-movie', verifyAccessToken, upload.fields([{
-    name: 'mainImage', maxCount: 1
-}, {
-    name: 'images', maxCount: 5
+    name: 'frontImage', maxCount: 1
 }]), ProductController.saveMovie)
 
 router.post('/save-money', verifyAccessToken, upload.fields([{
@@ -43,5 +41,8 @@ router.patch('/update-money/:id', verifyAccessToken, upload.fields([{
 }, {
     name: 'backImage', maxCount: 1
 }]), ProductController.updateMoney)
+
+
+router.get('/get-movies-by-director/:id', ProductController.getMoviesByDirectorId)
 
 module.exports = router
