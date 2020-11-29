@@ -65,15 +65,15 @@ const moneySchema = Joi.object(
 const moneyFilterSchema = Joi.object(
     {
         productType: Joi.string().required(),
-        productNo: Joi.string().allow('').optional(),
-        name: Joi.string().allow('').optional(),
-        condition: Joi.number().integer().allow(null).min(1).max(10).optional(),
-        serialNo: Joi.string().allow('').optional(),
-        minPrice: Joi.number().allow(null).min(0).optional(),
-        maxPrice: Joi.number().allow(null).min(0).optional(),
-        emission: Joi.string().allow('').optional(),
+        productNo: Joi.string().allow('', null),
+        name: Joi.string().allow('', null),
+        condition: Joi.number().integer().allow(null).min(1).max(10),
+        serialNo: Joi.string().allow('', null),
+        minPrice: Joi.number().allow(null).min(0),
+        maxPrice: Joi.number().allow(null).min(0),
+        emission: Joi.string().allow(''),
         clippings: Joi.array().items(Joi.string()),
-        sort: Joi.string().allow('').optional(),
+        sort: Joi.string().allow(''),
         paginationRequest: Joi.object().keys({
             limit: Joi.number().min(0),
             skip: Joi.number().min(0),
@@ -92,20 +92,21 @@ const movieSchema = Joi.object(
         categories: Joi.array().items(Joi.string()).required(),
         price: Joi.number().min(0).required(),
         productType: Joi.string().required(),
+        frontImageId: Joi.objectId().optional(),
     }
 )
-
+// TODO REMOVE OPTIONALS
 const movieFilterSchema = Joi.object(
     {
         productType: Joi.string().required(),
-        name: Joi.string().allow('').optional(),
-        condition: Joi.number().integer().allow(null).min(1).max(10).optional(),
-        minPrice: Joi.number().allow(null).min(0).optional(),
-        maxPrice: Joi.number().allow(null).min(0).optional(),
+        name: Joi.string().allow('', null),
+        condition: Joi.number().integer().allow(null).min(1).max(10),
+        minPrice: Joi.number().allow(null).min(0),
+        maxPrice: Joi.number().allow(null).min(0),
         actors: Joi.array().items(Joi.string()),
         directors: Joi.array().items(Joi.string()),
         categories: Joi.array().items(Joi.string()),
-        sort: Joi.string().allow('').optional(),
+        sort: Joi.string().allow(''),
         paginationRequest: Joi.object().keys({
             limit: Joi.number().min(0),
             skip: Joi.number().min(0),

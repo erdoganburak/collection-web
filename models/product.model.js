@@ -61,36 +61,31 @@ const movieSchema = new Schema({
             }
         }
     },
-    actors: {
-        type: [
-            {
-                type: Schema.Types.ObjectId,
-                ref: 'Actor',
-                required: true
-            }
-        ],
-        required: true,
+    actors: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: 'Actor',
+            required: true
+        },
+    ],
+    directors: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: 'Director',
+            required: true
+        },
+    ],
+    categories: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: 'Category',
+            required: true
+        },
+    ],
+    frontImage: {
+        type: Schema.Types.ObjectId,
+        ref: 'Image'
     },
-    directors: {
-        type: [
-            {
-                type: Schema.Types.ObjectId,
-                ref: 'Director',
-                required: true
-            }
-        ],
-        required: true,
-    },
-    categories: {
-        type: [
-            {
-                type: Schema.Types.ObjectId,
-                ref: 'Category',
-                required: true
-            }
-        ],
-        required: true,
-    }
 })
 
 const moneySchema = new Schema({

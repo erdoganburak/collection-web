@@ -64,8 +64,8 @@ module.exports = {
             }
 
             const categories = await Category.find({ _id: { $in: req.body.categories } });
-            if (categories.length !== req.body.actors.length) {
-                throw createError.BadRequest('One of the categories ids is not valid')
+            if (categories.length !== req.body.categories.length) {
+                throw createError.BadRequest('One of the category ids is not valid')
             }
 
             const movie = new Movie(req.body)
@@ -257,27 +257,13 @@ module.exports = {
                         });
                     }
 
-                    const matchDirectors = {}
-                    if (req.body.directors && req.body.directors.length > 0) {
-                        matchDirectors._id = req.body.directors;
-                    }
-
-                    const matchActors = {}
-                    if (req.body.actors && req.body.actors.length > 0) {
-                        matchActors._id = req.body.actors;
-                    }
-
-                    const matchCategories = {}
-                    if (req.body.categories && req.body.categories.length > 0) {
-                        matchCategories._id = req.body.categories;
-                    }
-
                     paginationResponse.count = movies[0].totalCount[0].count;
 
                     try {
-                        await Director.populate(movies[0].totalData, { path: 'directors', select: 'name', match: matchDirectors })
-                        await Actor.populate(movies[0].totalData, { path: 'actors', select: 'name', match: matchActors })
-                        await Category.populate(movies[0].totalData, { path: 'categories', select: 'name', match: matchCategories })
+
+                        await Director.populate(movies[0].totalData, { path: 'directors', select: 'name' })
+                        await Actor.populate(movies[0].totalData, { path: 'actors', select: 'name' })
+                        await Category.populate(movies[0].totalData, { path: 'categories', select: 'name' })
 
                         const result = {
                             movies: movies[0].totalData,
@@ -418,7 +404,7 @@ module.exports = {
             }
 
             req.body.productType = "Money";
-            const result = await moneySchema.validateAsync(req.body)
+            const result = await movieSchema.validateAsync(req.body)
 
             if (req.files) {
                 if (req.files.frontImage) {
@@ -448,6 +434,43 @@ module.exports = {
 
             await money.save()
             res.send(money)
+
+        } catch (error) {
+            if (error.isJoi === true) {
+                return next(createError.BadRequest())
+            }
+            next(error)
+        }
+    },
+    updateMovie: async (req, res, next) => {
+        try {
+            const movie = await Product.findOne({ _id: req.params.id })
+            if (!movie) {
+                throw createError.NotFound()
+            }
+
+            req.body.productType = "Movie";
+            const result = await movieSchema.validateAsync(req.body)
+
+            if (req.files) {
+                if (req.files.frontImage) {
+                    if (req.body.frontImageId) {
+                        await Image.findByIdAndUpdate(req.body.frontImageId, { $set: { image: req.files.frontImage[0].buffer } }, { new: true })
+                    } else {
+                        const fi = new Image({ image: req.files.frontImage[0].buffer })
+                        await fi.save();
+                        result.frontImage = fi._id;
+                    }
+                }
+            }
+
+            const updates = Object.keys(result)
+            updates.forEach(update => {
+                movie[update] = result[update]
+            });
+
+            await movie.save()
+            res.send(movie)
 
         } catch (error) {
             if (error.isJoi === true) {

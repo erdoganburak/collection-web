@@ -42,6 +42,9 @@ router.patch('/update-money/:id', verifyAccessToken, upload.fields([{
     name: 'backImage', maxCount: 1
 }]), ProductController.updateMoney)
 
+router.patch('/update-movie/:id', verifyAccessToken, upload.fields([{
+    name: 'frontImage', maxCount: 1
+}]), ProductController.updateMovie)
 
 router.get('/get-movies-by-director/:id', ProductController.getMoviesByDirectorId)
 
