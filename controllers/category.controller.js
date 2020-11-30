@@ -1,6 +1,8 @@
 
 const { categorySchema } = require('../helpers/validation_schema')
 const Category = require('../models/category.model')
+const { Movie } = require('../models/product.model')
+
 const createError = require('http-errors')
 
 module.exports = {
@@ -23,6 +25,10 @@ module.exports = {
             if (!category) {
                 throw createError.NotFound()
             }
+            // Find the deleted category in movies and delete the category reference in movies as well.
+
+            await Movie.updateMany({}, { $pullAll: { categories: [req.params.id] } })
+
             res.send(category)
         } catch (error) {
             if (error.isJoi === true) {

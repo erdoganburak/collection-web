@@ -36,6 +36,9 @@ module.exports = {
             if (!director) {
                 throw createError.NotFound()
             }
+            // Find the deleted director in movies and delete the director reference in movies as well.
+
+            await Movie.updateMany({}, { $pullAll: { directors: [req.params.id] } })
             res.send(director)
         } catch (error) {
             if (error.isJoi === true) {

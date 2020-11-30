@@ -2,6 +2,7 @@
 const { actorSchema } = require('../helpers/validation_schema')
 const Actor = require('../models/actor.model')
 const Image = require('../models/image.model')
+const { Movie } = require('../models/product.model')
 const createError = require('http-errors')
 
 module.exports = {
@@ -47,6 +48,9 @@ module.exports = {
             if (!actor) {
                 throw createError.NotFound()
             }
+            // Find the deleted actor in movies and delete the actor reference in movies as well.
+
+            await Movie.updateMany({}, { $pullAll: { actors: [req.params.id] } })
             res.send(actor)
         } catch (error) {
             if (error.isJoi === true) {
