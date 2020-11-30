@@ -165,6 +165,18 @@ module.exports = {
             next(error)
         }
     },
+    getMovieById: async (req, res, next) => {
+        const _id = req.params.id
+        try {
+            const movie = await Movie.findById(_id).populate('actors').populate('directors').populate('categories').exec();
+            if (!movie) {
+                throw createError.NotFound();
+            }
+            res.send(movie);
+        } catch (error) {
+            next(error)
+        }
+    },
     getProducts: async (req, res, next) => {
         try {
             let sortOrder = process.env.SORT_ORDER;
@@ -212,6 +224,14 @@ module.exports = {
                         match.categories = {
                             $in: req.body.categories.map(function (id) { return new mongoose.Types.ObjectId(id); })
                         }
+                    }
+
+                    if (req.body.year) {
+                        match.year = req.body.year;
+                    }
+
+                    if (req.body.format) {
+                        match.format = req.body.format;
                     }
 
                     if (req.body.sort === 'desc') {

@@ -2,6 +2,13 @@ const mongoose = require('mongoose');
 const { discriminator } = require('./money.model');
 const Schema = mongoose.Schema;
 
+const formats = {
+    VCD: 0,
+    DVD: 1,
+    BLURAY: 2,
+    BLURAY4K: 3
+}
+
 const productSchema = new Schema({
     price: {
         type: Number,
@@ -85,6 +92,22 @@ const movieSchema = new Schema({
     frontImage: {
         type: Schema.Types.ObjectId,
         ref: 'Image'
+    },
+    format: {
+        type: Number,
+        required: true,
+        validate(value) {
+
+        }
+    },
+    year: {
+        type: Number,
+        required: true,
+        validate(value) {
+            if (value < 0) {
+                throw new Error('Year must be a positive number')
+            }
+        }
     },
 })
 

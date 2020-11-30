@@ -93,9 +93,11 @@ const movieSchema = Joi.object(
         price: Joi.number().min(0).required(),
         productType: Joi.string().required(),
         frontImageId: Joi.objectId().optional(),
+        year: Joi.number().allow(null).min(0).required(),
+        format: Joi.number().allow(null).min(0).max(3).required(),
     }
 )
-// TODO REMOVE OPTIONALS
+
 const movieFilterSchema = Joi.object(
     {
         productType: Joi.string().required(),
@@ -106,6 +108,8 @@ const movieFilterSchema = Joi.object(
         actors: Joi.array().items(Joi.string()),
         directors: Joi.array().items(Joi.string()),
         categories: Joi.array().items(Joi.string()),
+        year: Joi.number().allow(null),
+        format: Joi.number().allow(null).min(0).max(3),
         sort: Joi.string().allow(''),
         paginationRequest: Joi.object().keys({
             limit: Joi.number().min(0),

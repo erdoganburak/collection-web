@@ -34,6 +34,8 @@ router.get('/get/:id', ProductController.getProductById)
 
 router.get('/get-money/:id', ProductController.getMoneyById)
 
+router.get('/get-movie/:id', ProductController.getMovieById)
+
 router.post('/filter', ProductController.getProducts)
 
 router.patch('/update-money/:id', verifyAccessToken, upload.fields([{
