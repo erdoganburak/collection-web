@@ -32,6 +32,8 @@ router.delete('/delete/:id', verifyAccessToken, ProductController.deleteProduct)
 
 router.get('/get/:id', ProductController.getProductById)
 
+router.post('/get-products', ProductController.getProductsByIds)
+
 router.get('/get-money/:id', ProductController.getMoneyById)
 
 router.get('/get-movie/:id', ProductController.getMovieById)

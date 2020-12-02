@@ -153,6 +153,28 @@ module.exports = {
         }
     },
 
+    getProductsByIds: async (req, res, next) => {
+        const _ids = req.body.productIds
+        try {
+            _ids.forEach(id => {
+                if (!mongoose.Types.ObjectId.isValid(id)) throw createError.BadRequest("Invalid id!");
+            });
+            const products = await Product.find({
+                '_id': {
+                    $in:_ids
+                }
+            }, '-__v -createdAt -updatedAt')
+
+            if (!products) {
+                throw createError.NotFound();
+            }
+
+            res.send(products);
+        } catch (error) {
+            next(error)
+        }
+    },
+
     getMoneyById: async (req, res, next) => {
         const _id = req.params.id
         try {
@@ -165,6 +187,7 @@ module.exports = {
             next(error)
         }
     },
+
     getMovieById: async (req, res, next) => {
         const _id = req.params.id
         try {
