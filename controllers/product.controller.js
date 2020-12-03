@@ -68,6 +68,11 @@ module.exports = {
                 throw createError.BadRequest('One of the category ids is not valid')
             }
 
+
+            if (req.body.status == 1 && (req.body.stock == null || req.body.stock <= 0)) {
+                req.body.stock = 1;
+            }
+
             const movie = new Movie(req.body)
             const savedMovie = await movie.save()
             res.send(savedMovie);
@@ -108,6 +113,10 @@ module.exports = {
             const clipping = await Clipping.findById(req.body.clipping);
             if (!clipping) {
                 throw createError.BadRequest('Clipping id is not valid')
+            }
+
+            if (req.body.status == 1 && (req.body.stock == null || req.body.stock <= 0)) {
+                req.body.stock = 1;
             }
 
             const money = new Money(req.body)
@@ -161,7 +170,7 @@ module.exports = {
             });
             const products = await Product.find({
                 '_id': {
-                    $in:_ids
+                    $in: _ids
                 }
             }, '-__v -createdAt -updatedAt')
 
@@ -257,6 +266,14 @@ module.exports = {
                         match.format = req.body.format;
                     }
 
+                    if (req.body.status) {
+                        match.status = req.body.status;
+                        if (match.status == 0) {
+                            match.status = {
+                                $in: [1, 2]
+                            }
+                        }
+                    }
                     if (req.body.sort === 'desc') {
                         sortOrder = -1;
                     }
@@ -364,6 +381,15 @@ module.exports = {
                         skip = req.body.paginationRequest.skip;
                     }
 
+                    if (req.body.status) {
+                        match.status = req.body.status;
+                        if (match.status == 0) {
+                            match.status = {
+                                $in: [1, 2]
+                            }
+                        }
+                    }
+
                     const moneys = await Product.aggregate([
                         { $match: match },
                         {
@@ -447,8 +473,10 @@ module.exports = {
             }
 
             req.body.productType = "Money";
-            const result = await movieSchema.validateAsync(req.body)
-
+            const result = await moneySchema.validateAsync(req.body)
+            if (req.body.status == 1 && (req.body.stock == null || req.body.stock <= 0)) {
+                result.stock = 1;
+            }
             if (req.files) {
                 if (req.files.frontImage) {
                     if (req.body.frontImageId) {
@@ -494,7 +522,9 @@ module.exports = {
 
             req.body.productType = "Movie";
             const result = await movieSchema.validateAsync(req.body)
-
+            if (req.body.status == 1 && (req.body.stock == null || req.body.stock <= 0)) {
+                result.stock = 1;
+            }
             if (req.files) {
                 if (req.files.frontImage) {
                     if (req.body.frontImageId) {
@@ -511,6 +541,8 @@ module.exports = {
             updates.forEach(update => {
                 movie[update] = result[update]
             });
+
+
 
             await movie.save()
             res.send(movie)

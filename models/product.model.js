@@ -9,13 +9,42 @@ const formats = {
     BLURAY4K: 3
 }
 
+const productStatus = {
+    All: 0,
+    Active: 1,
+    Passive: 2
+}
+
 const productSchema = new Schema({
+    name: {
+        type: String,
+        required: true,
+        trim: true
+    },
     price: {
         type: Number,
         required: true,
         validate(value) {
             if (value < 0) {
                 throw new Error('Price must be a positive number')
+            }
+        }
+    },
+    status: {
+        type: Number,
+        required: true,
+        validate(value) {
+            if (value === 0 || value > 2) {
+                throw new Error('Invalid status')
+            }
+        }
+    },
+    stock: {
+        type: Number,
+        required: true,
+        validate(value) {
+            if (value < 0) {
+                throw new Error('Stock must be zero or a positive number')
             }
         }
     },
@@ -36,11 +65,6 @@ const productSchema = new Schema({
 )
 
 const movieSchema = new Schema({
-    name: {
-        type: String,
-        trim: true,
-        required: true
-    },
     /*  images: [
           {
               type: Buffer
@@ -113,11 +137,6 @@ const movieSchema = new Schema({
 
 const moneySchema = new Schema({
     productNo: {
-        type: String,
-        required: true,
-        trim: true
-    },
-    name: {
         type: String,
         required: true,
         trim: true

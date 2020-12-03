@@ -58,7 +58,9 @@ const moneySchema = Joi.object(
         emission: Joi.string().required(),
         clipping: Joi.string().required(),
         frontImageId: Joi.objectId().optional(),
-        backImageId: Joi.objectId().optional()
+        backImageId: Joi.objectId().optional(),
+        status: Joi.number().min(1).max(2).required(),
+        stock: Joi.number().min(0).required()
     }
 )
 
@@ -73,6 +75,8 @@ const moneyFilterSchema = Joi.object(
         maxPrice: Joi.number().allow(null).min(0),
         emission: Joi.string().allow(''),
         clippings: Joi.array().items(Joi.string()),
+        status: Joi.number().min(0).max(2).required(),
+        stock: Joi.number().allow(null).min(0),
         sort: Joi.string().allow(''),
         paginationRequest: Joi.object().keys({
             limit: Joi.number().min(0),
@@ -95,6 +99,8 @@ const movieSchema = Joi.object(
         frontImageId: Joi.objectId().optional(),
         year: Joi.number().allow(null).min(0).required(),
         format: Joi.number().allow(null).min(0).max(3).required(),
+        status: Joi.number().min(1).max(2).required(),
+        stock: Joi.number().min(0).required()
     }
 )
 
@@ -110,18 +116,13 @@ const movieFilterSchema = Joi.object(
         categories: Joi.array().items(Joi.string()),
         year: Joi.number().allow(null),
         format: Joi.number().allow(null).min(0).max(3),
+        status: Joi.number().min(0).max(2).required(),
+        stock: Joi.number().allow(null).min(0),
         sort: Joi.string().allow(''),
         paginationRequest: Joi.object().keys({
             limit: Joi.number().min(0),
             skip: Joi.number().min(0),
         }).required()
-    }
-)
-
-const cartSchema = Joi.object(
-    {
-        id: Joi.objectId().required(),
-        productId: Joi.objectId().required(),
     }
 )
 
