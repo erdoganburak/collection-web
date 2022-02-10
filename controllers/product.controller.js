@@ -68,7 +68,6 @@ module.exports = {
                 throw createError.BadRequest('One of the category ids is not valid')
             }
 
-
             if (req.body.status == 1 && (req.body.stock == null || req.body.stock <= 0)) {
                 req.body.stock = 1;
             }

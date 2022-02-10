@@ -14,8 +14,7 @@ const imageRoute = require('./routes/image.route')
 const actorRoute = require('./routes/actor.route')
 const directorRoute = require('./routes/director.route')
 const categoryRoute = require('./routes/category.route')
-
-const cartRoute = require('./routes/cart.route')
+const orderRoute = require('./routes/order.route')
 
 require('./helpers/init_redis')
 
@@ -45,10 +44,10 @@ app.use('/emission', emissionRoute)
 app.use('/money', moneyRoute)
 app.use('/product', productRoute)
 app.use('/image', imageRoute)
-app.use('/cart', cartRoute)
 app.use('/actor', actorRoute)
 app.use('/director', directorRoute)
 app.use('/category', categoryRoute)
+app.use('/order', orderRoute)
 
 app.use(async (req, res, next) => {
     next(createError.NotFound())

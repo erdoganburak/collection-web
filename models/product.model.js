@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const { discriminator } = require('./money.model');
 const Schema = mongoose.Schema;
 
+// TODO make these global
 const formats = {
     VCD: 0,
     DVD: 1,

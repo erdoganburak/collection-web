@@ -44,8 +44,16 @@ const categorySchema = Joi.object(
     }
 )
 
-
-// product: Joi.objectId().required()
+const orderSchema = Joi.object(
+    {
+        name: Joi.string().required(),
+        email: Joi.string().email().lowercase().required(),
+        address: Joi.string().required(),
+        phone: Joi.string().required(),
+        description: Joi.string().optional(),
+        products: Joi.array().items(Joi.string()).required()
+    }
+)
 
 const moneySchema = Joi.object(
     {
@@ -136,5 +144,6 @@ module.exports = {
     directorSchema,
     categorySchema,
     movieSchema,
-    movieFilterSchema
+    movieFilterSchema,
+    orderSchema
 }
